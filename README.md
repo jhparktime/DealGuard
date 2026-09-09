@@ -59,6 +59,21 @@
 
 ---
 
+## 프로젝트 한눈에 보기
+
+**규칙 기반 탐지와 LLM을 Android 앱에 통합한 스캠 위험 알림 팀 프로젝트**입니다. 키워드만으로 판단하기 어려운 메시지의 맥락을 분석하고 사용자에게 경고 이유를 전달합니다.
+
+- **AI 구현:** 규칙 기반 분석과 Gemini의 맥락 분석·경고 문구 생성을 연결합니다.
+- **jhparktime의 기여:** Gemini 연동, 프롬프트 수정, 탐지 점수 조정, 경고 문구 생성 및 리팩터링. [기여 커밋](https://github.com/jhparktime/OnGuard/commits/main/?author=jhparktime)에서 확인할 수 있습니다.
+- **협업:** 초기 구조·아키텍처는 Zaeewang, AI/LLM 통합·리팩터링은 jhparktime이 담당했습니다.
+- **확인 가능한 산출물:** 앱 소스와 탐지 엔진 테스트 코드. 탐지 정확도나 응답 시간의 보편적인 성능 보장을 의미하지 않습니다.
+
+**먼저 볼 코드:** [탐지 엔진](app/src/main/java/com/onguard/detector/) · [Gemini 분석](app/src/main/java/com/onguard/detector/LLMScamDetector.kt) · [탐지 테스트](app/src/test/java/com/onguard/detector/HybridScamDetectorTest.kt)
+
+**데이터 흐름:** LLM 분석 경로에서는 `PiiMasker`를 적용한 메시지·대화 맥락과 분석 정보를 외부 Gemini API로 전달합니다. 실행에는 Android 환경과 사용할 외부 서비스의 API 설정이 필요합니다.
+
+---
+
 ## 주요 기능
 
 ### 🛡️ 플랫폼 무관 실시간 모니터링
@@ -111,7 +126,7 @@ OnGuard는 3단계 하이브리드 탐지 시스템으로 **높은 정확도**�
 
 ### 🔐 프라이버시 우선
 - **모든 분석은 온디바이스에서 수행** (LLM API 호출 제외)
-- AccessibilityService 데이터 절대 서버 전송 금지
+- LLM 분석 경로에서는 마스킹한 메시지·대화 맥락과 분석 정보를 외부 Gemini API로 전송
 - 사용자 명시적 동의 후에만 모니터링 시작
 - Google Play Prominent Disclosure 준수
 
@@ -348,9 +363,9 @@ app/src/main/java/com/onguard/
 OnGuard는 사용자 프라이버시를 최우선으로 설계되었습니다:
 
 ### 데이터 보호
-- ✅ **AccessibilityService 데이터는 절대 외부 전송 금지**
+- **외부 전송 범위:** LLM 분석 경로에서 `PiiMasker`를 적용한 메시지·대화 맥락과 분석 정보를 Gemini API에 전달
 - ✅ **모든 Rule-based 분석은 온디바이스에서 수행**
-- ✅ **LLM API 호출 시에도 최소 정보만 전송** (분석 결과, 키워드만)
+- **마스킹 경로:** `HybridScamDetector`에서 `ScamLlmRequest`의 메시지·맥락·분석 이유에 `PiiMasker` 적용
 - ✅ **로그에 민감 정보 마스킹** (전화번호, 계좌번호)
 
 ### 권한 관리
